@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neo Clips</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b12;
+      color: #f5f5fa;
+    }
+    header {
+      padding: 22px 7%;
+      border-bottom: 1px solid #29293a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-size: 25px; font-weight: 800; }
+    .logo span { color: #a78bfa; }
+    .tag { color: #aaa8bd; font-size: 13px; }
+    main { max-width: 900px; margin: 55px auto; padding: 0 20px; }
+    .hero { text-align: center; margin-bottom: 35px; }
+    h1 { font-size: clamp(32px, 6vw, 52px); margin-bottom: 12px; }
+    h1 span { color: #a78bfa; }
+    p { color: #b8b7c9; line-height: 1.6; }
+    .panel {
+      background: #151520;
+      border: 1px solid #303044;
+      padding: 25px;
+      border-radius: 18px;
+      margin-bottom: 22px;
+    }
+    label { display: block; margin-bottom: 10px; font-weight: bold; }
+    input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #424258;
+      background: #0c0c15;
+      color: white;
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+    button {
+      padding: 14px 20px;
+      background: #8b5cf6;
+      color: white;
+      border: 0;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button:hover { background: #7546e8; }
+    .notice {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 10px;
+      background: #222033;
+      color: #ddd5ff;
+      line-height: 1.5;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .feature {
+      background: #151520;
+      border: 1px solid #303044;
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .feature h3 { margin-top: 5px; }
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #77768b;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">NEO <span>CLIPS</span></div>
+    <div class="tag">Your stream. Your highlights.</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Din stream.<br><span>Dina bästa klipp.</span></h1>
+      <p>En egen plattform för att hitta höjdpunkter
+      från dina Twitch-streams.</p>
+    </section>
+
+    <section class="panel">
+      <label for="twitchUrl">Länk till din Twitch-stream</label>
+      <input id="twitchUrl" type="url"
+        placeholder="https://www.twitch.tv/videos/123456789">
+      <button id="analyzeButton">Analysera stream</button>
+      <div id="status" class="notice" role="status">
+        Klistra in en länk till en sparad Twitch-stream för att börja.
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature">
+        <h3>AI-höjdpunkter</h3>
+        <p>Hitta roliga och spännande ögonblick automatiskt.</p>
+      </div>
+      <div class="feature">
+        <h3>Automatiska klipp</h3>
+        <p>Skapa klipp som är redo att granskas och redigeras.</p>
+      </div>
+      <div class="feature">
+        <h3>Utan vattenstämpel</h3>
+        <p>Målet är rena videofiler utan pålaggad logotyp.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>Neo Clips · En plattform under utveckling</footer>
+
+  <script>
+    const input = document.getElementById("twitchUrl");
+    const button = document.getElementById("analyzeButton");
+    const status = document.getElementById("status");
+
+    button.addEventListener("click", () => {
+      const url = input.value.trim();
+
+      let parsed;
+      try {
+        parsed = new URL(url);
+      } catch {
+        status.textContent = "Skriv en giltig Twitch-länk först.";
+        return;
+      }
+
+      const validHost = [
+        "twitch.tv",
+        "www.twitch.tv",
+        "m.twitch.tv"
+      ].includes(parsed.hostname);
+
+      const isVod = /^\/videos\/\d+\/?$/.test(parsed.pathname);
+
+      if (!validHost || !isVod) {
+        status.textContent =
+          "Använd länken till en sparad stream, till exempel " +
+          "https://www.twitch.tv/videos/123456789";
+        return;
+      }
+
+      status.textContent =
+        "Länken ser giltig ut! AI-analysen är ännu inte ansluten. " +
+        "Nästa steg är att koppla Twitch och en säker videomotor.";
+    });
+  </script>
+</body>
+</html>
