@@ -178,6 +178,148 @@
     window.location.href =
       "https://id.twitch.tv/oauth2/authorize?" + params.toString();
   });
+
+<script>
+  const TWITCH_CLIENT_ID = "DIN_CLIENT_ID";
+  const REDIRECT_URI = "https://neo-clips.vercel.app/";
+
+  const loginButton = document.getElementById("twitchLogin");
+  const input = document.getElementById("twitchUrl");
+  const analyzeButton = document.getElementById("analyzeButton");
+  const status = document.getElementById("status");
+
+  function showStatus(message) {
+    if (status) status.textContent = message;
+  }
+
+  // Läs av resultatet när Twitch skickar tillbaka oss.
+  async function handleTwitchReturn() {
+    const params = new URLSearchParams(
+      window.location.hash.slice(1)
+    );
+
+    const token = params.get("access_token");
+    const returnedState = params.get("state");
+    const savedState = sessionStorage.getItem("twitch_oauth_state");
+
+    if (params.has("error")) {
+      showStatus("Twitch-inloggningen avbröts eller nekades.");
+      history.replaceState(null, "", REDIRECT_URI);
+      return;
+    }
+
+    if (!token) return;
+
+    // Kontrollera att svaret hör till vår inloggning.
+    if (!savedState || returnedState !== savedState) {
+      showStatus("Inloggningen kunde inte verifieras. Försök igen.");
+      history.replaceState(null, "", REDIRECT_URI);
+      return;
+    }
+
+    sessionStorage.removeItem("twitch_oauth_state");
+    history.replaceState(null, "", REDIRECT_URI);
+    showStatus("Kontrollerar ditt Twitch-konto...");
+
+    try {
+      const response = await fetch(
+        "https://api.twitch.tv/helix/users",
+        {
+          headers: {
+            "Client-Id": TWITCH_CLIENT_ID,
+            "Authorization": "Bearer " + token
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Twitch API svarade med " + response.status);
+      }
+
+      const result = await response.json();
+      const user = result.data && result.data[0];
+
+      if (!user) throw new Error("Inget Twitch-konto hittades.");
+
+      // Token sparas bara i minnet under denna sidvisning.
+      window.neoClipsToken = token;
+
+      if (loginButton) {
+        loginButton.textContent = "Ansluten: " + user.display_name;
+        loginButton.disabled = true;
+      }
+
+      showStatus(
+        "Du är inloggad som " + user.display_name +
+        "! Twitch-kopplingen fungerar. Nästa steg är att hämta dina VOD:ar."
+      );
+    } catch (error) {
+      showStatus(
+        "Kunde inte kontrollera Twitch-kontot. " +
+        "Kontrollera Client ID och försök igen."
+      );
+      console.error(error);
+    }
+  }
+
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      if (!TWITCH_CLIENT_ID || TWITCH_CLIENT_ID === "DIN_CLIENT_ID") {
+        showStatus("Lägg in din Twitch Client ID i koden först.");
+        return;
+      }
+
+      const state = crypto.randomUUID();
+      sessionStorage.setItem("twitch_oauth_state", state);
+
+      const params = new URLSearchParams({
+        client_id: 71oar772ro56a6x22mc3xq4r9k85ot,
+        redirect_uri: REDIRECT_URI,
+        response_type: "token",
+        state: state
+      });
+
+      window.location.href =
+        "https://id.twitch.tv/oauth2/authorize?" + params.toString();
+    });
+  }
+
+  if (analyzeButton) {
+    analyzeButton.addEventListener("click", () => {
+      let parsed;
+
+      try {
+        parsed = new URL(input.value.trim());
+      } catch {
+        showStatus("Skriv en giltig Twitch-länk först.");
+        return;
+      }
+
+      if (
+        !["twitch.tv", "www.twitch.tv", "m.twitch.tv"]
+          .includes(parsed.hostname) ||
+        !/^\/videos\/\d+\/?$/.test(parsed.pathname)
+      ) {
+        showStatus(
+          "Använd en länk till en sparad stream, till exempel " +
+          "https://www.twitch.tv/videos/123456789"
+        );
+        return;
+      }
+
+      if (!window.neoClipsToken) {
+        showStatus("Logga in med Twitch innan du fortsätter.");
+        return;
+      }
+
+      showStatus(
+        "Länken är giltig och Twitch är anslutet. " +
+        "Hämtning och AI-analys av videon är nästa steg."
+      );
+    });
+  }
+
+  handleTwitchReturn();
 </script>
 </body>
 </html>
