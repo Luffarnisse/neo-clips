@@ -88,6 +88,7 @@
 <body>
   <header>
     <div class="logo">NEO <span>CLIPS</span></div>
+<button id="twitchLogin">Logga in med Twitch</button>
     <div class="tag">Your stream. Your highlights.</div>
   </header>
 
@@ -162,5 +163,21 @@
         "Nästa steg är att koppla Twitch och en säker videomotor.";
     });
   </script>
+  <script>
+  const TWITCH_CLIENT_ID = "71oar772ro56a6x22mc3xq4r9k85ot";
+  const REDIRECT_URI = "https://neo-clips.vercel.app/";
+
+  document.getElementById("twitchLogin").addEventListener("click", () => {
+    const params = new URLSearchParams({
+      client_id: TWITCH_CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      response_type: "token",
+      scope: "user:read:email"
+    });
+
+    window.location.href =
+      "https://id.twitch.tv/oauth2/authorize?" + params.toString();
+  });
+</script>
 </body>
 </html>
